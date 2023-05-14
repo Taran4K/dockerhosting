@@ -23,12 +23,6 @@ services:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: password1234
         POSTGRES_DB: OrganizationControl
-    
-  adminer:
-    restart: always
-    image: adminer
-    ports:
-      - 8888:8081
 
 volumes:
   postgres_data:
