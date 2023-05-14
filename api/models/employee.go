@@ -10,4 +10,5 @@ type Employee struct {
 	NumberPasp    string `json:"numberpasp" db:"numberpasp" binding:"required"`
 	Email         string `json:"email" db:"email" binding:"required"`
 	Department_ID int    `json:"department_id" db:"department_id"`
+	EmailVerified bool   `json:"emailverified" db:"emailverified"`
 }

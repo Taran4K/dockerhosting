@@ -8,6 +8,11 @@ import (
 )
 
 func (h *Handler) createTask(c *gin.Context) {
+	idorg, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "Неверный ключ")
+	}
+
 	iddep, err := strconv.Atoi(c.Param("department_id"))
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, "Неверный ключ")
@@ -24,13 +29,28 @@ func (h *Handler) createTask(c *gin.Context) {
 		return
 	}
 
-	org, err := h.services.Task.Create(input, idempl, iddep)
+	task, err := h.services.Task.Create(input, idempl, iddep)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, org)
+	empl, err1 := h.services.Employee.GetById(idempl, iddep, idorg)
+	if err1 != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if empl.EmailVerified == true {
+		var message = "Создана задача: " + task.Name + ", которую необходимо выполнить до: " + task.Date_end[:len(task.Date_end)-10] + ". Описание задачи: " + task.Description
+		_, err2 := h.services.User.SendMail(empl.Email, "Добавлена задача", message)
+		if err2 != nil {
+			newErrorResponse(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, task)
 }
 
 func (h *Handler) getAllTask(c *gin.Context) {
@@ -81,6 +101,11 @@ func (h *Handler) getTask(c *gin.Context) {
 }
 
 func (h *Handler) updateTask(c *gin.Context) {
+	idorg, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "Неверный ключ")
+	}
+
 	iddep, err := strconv.Atoi(c.Param("department_id"))
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, "Неверный ключ")
@@ -108,15 +133,30 @@ func (h *Handler) updateTask(c *gin.Context) {
 		return
 	}
 
-	org, err := h.services.Task.Update(id, input, idempl, iddep)
+	task, err := h.services.Task.Update(id, input, idempl, iddep)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	empl, err1 := h.services.Employee.GetById(idempl, iddep, idorg)
+	if err1 != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if empl.EmailVerified == true {
+		var message = "Создана задача: " + task.Name + ", которую необходимо выполнить до: " + task.Date_end[:len(task.Date_end)-10] + ". Описание задачи: " + task.Description
+		_, err2 := h.services.User.SendMail(empl.Email, "Добавлена задача", message)
+		if err2 != nil {
+			newErrorResponse(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
 	c.JSON(http.StatusOK, getTaskAndmessage{
 		Message: "Успешное изменение данных",
-		Data:    org,
+		Data:    task,
 	})
 }
 

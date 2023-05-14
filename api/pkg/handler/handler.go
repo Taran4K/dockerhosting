@@ -33,8 +33,43 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	auth := router.Group("/auth")
 	{
-		auth.POST("sign-up", h.signUp)
-		auth.POST("sign-in", h.signIn)
+		auth.POST("/sign-up", h.signUp)
+		auth.POST("/emailcheck", h.emailCheck)
+		auth.POST("/sign-in", h.signIn)
+	}
+
+	user := router.Group("/user", h.userIdentity)
+	{
+		checks := user.Group(":iduser/checks")
+		{
+			checks.PUT("/:idtask", h.updateUserTask)      //изменение
+			checks.DELETE("/:idtask", h.deleteUserTask)   //удаление
+			checks.PATCH("/:idtask", h.deleteLogUserTask) //удаление
+			checks.POST("/", h.createUserTask)            //создание
+			checks.GET("/", h.getAllUserTask)             //получение всех
+			checks.GET("/:idtask", h.getUserTask)         //получение одного
+		}
+		goals := user.Group(":iduser/goals")
+		{
+			goals.PUT("/:idgoal", h.updateUserGoal)      //изменение
+			goals.DELETE("/:idgoal", h.deleteUserGoal)   //удаление
+			goals.PATCH("/:idgoal", h.deleteLogUserGoal) //удаление
+			goals.POST("/", h.createUserGoal)            //создание
+			goals.GET("/", h.getAllUserGoal)             //получение всех
+			goals.GET("/:idgoal", h.getUserGoal)         //получение одного
+		}
+		strats := user.Group(":iduser/strats")
+		{
+			strats.PUT("/:idstrat", h.updateUserStrat)      //изменение
+			strats.DELETE("/:idstrat", h.deleteUserStrat)   //удаление
+			strats.PATCH("/:idstrat", h.deleteLogUserStrat) //удаление
+			strats.POST("/", h.createUserStrat)             //создание
+			strats.GET("/", h.getAllUserStrat)              //получение всех
+			strats.GET("/:idstrat", h.getUserStrat)         //получение одного
+		}
+		user.PUT("/:iduser", h.updateProfileUser)       //изменение профиля
+		user.POST("/:iduser", h.updatePasswordUser)     //изменение пароля
+		user.PATCH("/:iduser", h.updateProfileEmployee) //Изменение данных сотрудника
 	}
 
 	api := router.Group("/api")
@@ -47,8 +82,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			orgs.GET("/:id", h.getOrganization)
 			orgs.PUT("/:id", h.updateOrganization)
 			orgs.DELETE("/:id", h.deleteOrganization)
+			orgs.GET("/:id/director", h.getDirector)
+			orgs.PUT("/:id/director", h.updateDirector, h.organizationIdentity)
 
-			strategy := orgs.Group(":id/strategy")
+			strategy := orgs.Group(":id/strategy", h.organizationIdentity)
 			{
 				strategy.POST("/", h.createStrategy)
 				strategy.GET("/", h.getAllStrategies)
@@ -57,7 +94,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 				strategy.DELETE("/:strategy_id", h.deleteStrategy)
 			}
 
-			operations := orgs.Group(":id/operation")
+			operations := orgs.Group(":id/operation", h.organizationIdentity)
 			{
 				operations.POST("/", h.createOperation)
 				operations.GET("/", h.getAllOperation)
@@ -66,13 +103,25 @@ func (h *Handler) InitRoutes() *gin.Engine {
 				operations.DELETE("/:operation_id", h.deleteOperation)
 			}
 
-			department := orgs.Group(":id/department")
+			employeesall := orgs.Group(":id/employeesall", h.organizationIdentity)
+			{
+				employeesall.GET("/", h.getAllOrganizationEmployees)
+			}
+
+			postsall := orgs.Group(":id/postsall", h.organizationIdentity)
+			{
+				postsall.GET("/", h.getAllOrganizationPosts)
+			}
+
+			department := orgs.Group(":id/department", h.organizationIdentity)
 			{
 				department.POST("/", h.createDepartment)
 				department.GET("/", h.getAllDepartment)
 				department.GET("/:department_id", h.getDepartment)
 				department.PUT("/:department_id", h.updateDepartment)
 				department.DELETE("/:department_id", h.deleteDepartment)
+				department.GET("/:department_id/rucovoditel", h.getRucovoditel)
+				department.PUT("/:department_id/rucovoditel", h.updateRucovoditel)
 
 				goals := department.Group(":department_id/goal")
 				{
@@ -90,6 +139,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 					post.GET("/:post_id", h.getPost)
 					post.PUT("/:post_id", h.updatePost)
 					post.DELETE("/:post_id", h.deletePost)
+
 				}
 
 				employee := department.Group(":department_id/employee")

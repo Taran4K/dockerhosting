@@ -55,6 +55,23 @@ func (h *Handler) getAllPost(c *gin.Context) {
 	})
 }
 
+func (h *Handler) getAllOrganizationPosts(c *gin.Context) {
+	idorg, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "Неверный ключ")
+	}
+
+	list, err := h.services.Post.GetOrganizationAll(idorg)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, getAllPostsResponse{
+		Data: list,
+	})
+}
+
 func (h *Handler) getPost(c *gin.Context) {
 	idorg, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

@@ -59,6 +59,27 @@ func (r *DepartmentPostgres) GetById(id int, idorg int) (models.Department, erro
 	return department, err
 }
 
+func (r *DepartmentPostgres) GetRucovoditel(id int) (models.Employee, error) {
+	var empls []models.Employee
+	query := fmt.Sprintf("SELECT * FROM %s WHERE department_id=$1", apiEmployeeTable)
+
+	err := r.db.Select(&empls, query, id)
+	if err != nil {
+		return models.Employee{}, err
+	}
+	for i := 0; i < len(empls); i++ {
+		var usr models.User
+		query1 := fmt.Sprintf("SELECT * FROM \"%s\" WHERE employee_id=$1", usersTable)
+
+		err1 := r.db.Get(&usr, query1, empls[i].ID_Employee)
+
+		if usr.Roles_ID == 2 {
+			return empls[i], err1
+		}
+	}
+	return models.Employee{}, err
+}
+
 func (r *DepartmentPostgres) Delete(id int, idorg int) error {
 	iddep := "id_department"
 	query := fmt.Sprintf("SELECT delete_row($1, $2, $3)")
@@ -78,4 +99,32 @@ func (r *DepartmentPostgres) Update(id int, department models.Department, idorg 
 	dep, _ = r.GetById(id, idorg)
 
 	return dep, err
+}
+
+func (r *DepartmentPostgres) UpdateRucovoditel(olddir, newdir int) (string, error) {
+	query := fmt.Sprintf("SELECT swap_roles($1, $2)")
+
+	id, err := r.db.Exec(query, newdir, 2)
+	if id == nil {
+		return "", err
+	}
+
+	query1 := fmt.Sprintf("SELECT swap_roles($1, $2)")
+
+	id, err1 := r.db.Exec(query1, olddir, 1)
+	if id == nil {
+		return "", err1
+	}
+
+	return "Успешное изменение данных", err1
+}
+
+func (r *DepartmentPostgres) CreateRucovoditel(newruc int) (string, error) {
+	query := fmt.Sprintf("SELECT swap_roles($1, $2)")
+
+	_, err := r.db.Exec(query, newruc, 2)
+	if err != nil {
+		return "", err
+	}
+	return "Успешное изменение данных", err
 }

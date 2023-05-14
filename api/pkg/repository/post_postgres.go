@@ -50,6 +50,27 @@ func (r *PostPostgres) GetAll(iddep int) ([]models.Post, error) {
 	return Post, err
 }
 
+func (r *PostPostgres) GetOrganizationAll(idorg int) ([]models.Post, error) {
+	var deps []models.Department
+	query := fmt.Sprintf("SELECT * FROM %s WHERE organization_id=$1", apiDepartmentTable)
+
+	err := r.db.Select(&deps, query, idorg)
+
+	var posts []models.Post
+	for i := 0; i < len(deps); i++ {
+		var tempposts []models.Post
+		query2 := fmt.Sprintf("SELECT * FROM %s WHERE department_id=$1", apiPostTable)
+
+		err2 := r.db.Select(&tempposts, query2, deps[i].ID_Department)
+		if err2 != nil {
+			return []models.Post{}, err
+		}
+		posts = append(posts, tempposts...)
+	}
+
+	return posts, err
+}
+
 func (r *PostPostgres) GetById(id int, iddep int) (models.Post, error) {
 	var Post models.Post
 	query := fmt.Sprintf("SELECT * FROM %s WHERE id_Post=$1 AND department_id=$2", apiPostTable)

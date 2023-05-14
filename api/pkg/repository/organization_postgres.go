@@ -78,9 +78,24 @@ func (r *OrganizationPostgres) GetById(id int) (models.Organization, error) {
 	return org, err
 }
 
+func (r *OrganizationPostgres) GetDirector(empls []models.Employee) (models.Employee, error) {
+	for i := 0; i < len(empls); i++ {
+		var usr models.User
+		query := fmt.Sprintf("SELECT * FROM \"%s\" WHERE employee_id=$1", usersTable)
+
+		err := r.db.Get(&usr, query, empls[i].ID_Employee)
+
+		if usr.Roles_ID == 3 {
+			return empls[i], err
+		}
+	}
+	return models.Employee{}, nil
+}
+
 func (r *OrganizationPostgres) GetByKey(key string) (models.Organization, error) {
+	print(key)
 	var org models.Organization
-	query := fmt.Sprintf("SELECT * FROM %s WHERE Auth_Key=$1", apiOrganizationTable)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE auth_key=$1", apiOrganizationTable)
 
 	err := r.db.Get(&org, query, key)
 
@@ -106,4 +121,35 @@ func (r *OrganizationPostgres) Update(id int, organization models.Organization) 
 	org, _ = r.GetById(id)
 
 	return org, err
+}
+
+func (r *OrganizationPostgres) UpdateDirector(olddir, newdir int) (string, error) {
+	query := fmt.Sprintf("SELECT swap_roles($1, $2)")
+
+	id, err := r.db.Exec(query, newdir, 3)
+	fmt.Print(id)
+	if id == nil {
+		return "", err
+	}
+
+	query1 := fmt.Sprintf("SELECT swap_roles($1, $2)")
+
+	id, err1 := r.db.Exec(query1, olddir, 1)
+	fmt.Print(id)
+	if id == nil {
+		return "", err1
+	}
+
+	return "Успешное изменение данных", err
+}
+
+func (r *OrganizationPostgres) CreateDirector(newdir int) (string, error) {
+	query := fmt.Sprintf("SELECT swap_roles($1, $2)")
+
+	_, err := r.db.Exec(query, newdir, 3)
+	if err != nil {
+		return "", err
+	}
+
+	return "Успешное изменение данных", err
 }

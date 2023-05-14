@@ -117,3 +117,45 @@ func (h *Handler) getOrganizationByKey(c *gin.Context) {
 
 	c.JSON(http.StatusOK, org)
 }
+
+func (h *Handler) getDirector(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	empl, err := h.services.Organization.GetDirector(id)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, empl)
+}
+
+func (h *Handler) updateDirector(c *gin.Context) {
+	oldempl, _ := strconv.Atoi(c.Query("oldempl"))
+	newempl, _ := strconv.Atoi(c.Query("newempl"))
+
+	id, _ := strconv.Atoi(c.Param("id"))
+	empl, err := h.services.Organization.GetDirector(id)
+	if err != nil {
+		empl.ID_Employee = 0
+		msg, err := h.services.Organization.UpdateDirector(empl, oldempl, newempl)
+		if err != nil {
+			newErrorResponse(c, http.StatusInternalServerError, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, map[string]interface{}{
+			"message": msg,
+		})
+	}
+
+	msg, err := h.services.Organization.UpdateDirector(empl, oldempl, newempl)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"message": msg,
+		"error":   err,
+	})
+}

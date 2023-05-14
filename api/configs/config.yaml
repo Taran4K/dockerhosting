@@ -1,9 +1,9 @@
-port: "3211"
+port: "3210"
 
 db:
   username: "postgres"
   password: "password1234"
   host: "postgres"
-  port: "5432"
+  port: "5433"
   dbname: "OrganizationControl"
   sslmode: "disable"

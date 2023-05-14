@@ -4,6 +4,7 @@ import (
 	"api/models"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"time"
 )
 
 type GoalPostgres struct {
@@ -25,16 +26,26 @@ func (r *GoalPostgres) Create(Goal models.Goal, idorg int) (models.Goal, error) 
 		return models.Goal{}, err
 	}
 	var GoalId int
-	query := fmt.Sprintf("SELECT insert_SGT($1, $2, $3, $4, $5, $6, $7, $8, $9)")
+	query := fmt.Sprintf("SELECT insert_SGT($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)")
 
-	row := tx.QueryRow(query, Goal.Name, Goal.Description, Goal.Date_start, Goal.Date_end, Goal.Done, Goal.Department_ID, foreignkeyGoal, apiGoalTable, primarykeyGoal)
-
-	err = row.Scan(&GoalId)
-	if err != nil {
-		tx.Rollback()
-		return models.Goal{}, err
+	if Goal.Done == true {
+		datetemp := time.Now().Add(time.Hour * time.Duration(3)).Format("2006-01-02 15:04:05")
+		var row = tx.QueryRow(query, Goal.Name, Goal.Description, Goal.Date_start, Goal.Date_end, Goal.Done, datetemp, Goal.Department_ID, foreignkeyGoal, apiGoalTable, primarykeyGoal)
+		err = row.Scan(&GoalId)
+		if err != nil {
+			tx.Rollback()
+			return models.Goal{}, err
+		}
+		tx.Commit()
+	} else {
+		var row = tx.QueryRow(query, Goal.Name, Goal.Description, Goal.Date_start, Goal.Date_end, Goal.Done, time.Date(0, 0, 0, 0, 0, 0, 0, time.Local), Goal.Department_ID, foreignkeyGoal, apiGoalTable, primarykeyGoal)
+		err = row.Scan(&GoalId)
+		if err != nil {
+			tx.Rollback()
+			return models.Goal{}, err
+		}
+		tx.Commit()
 	}
-	tx.Commit()
 
 	org, err = r.GetById(GoalId, Goal.Department_ID)
 	if err != nil {
@@ -74,11 +85,18 @@ func (r *GoalPostgres) Delete(id int, idorg int) error {
 func (r *GoalPostgres) Update(id int, Goal models.Goal, idorg int) (models.Goal, error) {
 	var org models.Goal
 
-	query := fmt.Sprintf("SELECT update_SGT($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)")
+	query := fmt.Sprintf("SELECT update_SGT($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)")
 
-	_, err := r.db.Exec(query, id, Goal.Name, Goal.Description, Goal.Date_start, Goal.Date_end, Goal.Done, Goal.Department_ID, foreignkeyGoal, apiGoalTable, primarykeyGoal)
+	if Goal.Done == true {
+		datetemp := time.Now().Add(time.Hour * time.Duration(3)).Format("2006-01-02 15:04:05")
+		_, err := r.db.Exec(query, id, Goal.Name, Goal.Description, Goal.Date_start, Goal.Date_end, Goal.Done, datetemp, Goal.Department_ID, foreignkeyGoal, apiGoalTable, primarykeyGoal)
+		org, _ = r.GetById(id, Goal.Department_ID)
 
-	org, _ = r.GetById(id, Goal.Department_ID)
+		return org, err
+	} else {
+		_, err := r.db.Exec(query, id, Goal.Name, Goal.Description, Goal.Date_start, Goal.Date_end, Goal.Done, time.Date(0, 0, 0, 0, 0, 0, 0, time.Local), Goal.Department_ID, foreignkeyGoal, apiGoalTable, primarykeyGoal)
+		org, _ = r.GetById(id, Goal.Department_ID)
 
-	return org, err
+		return org, err
+	}
 }

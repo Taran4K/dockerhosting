@@ -32,6 +32,10 @@ func (s *EmployeeService) GetAll(iddep int, idorg int) ([]models.Employee, error
 	return s.repo.GetAll(iddep)
 }
 
+func (s *EmployeeService) GetOrganizationAll(idorg int) ([]models.Employee, error) {
+	return s.repo.GetOrganizationAll(idorg)
+}
+
 func (s *EmployeeService) GetById(id int, iddep int, idorg int) (models.Employee, error) {
 	_, err := s.dep.GetById(iddep, idorg)
 	if err != nil {

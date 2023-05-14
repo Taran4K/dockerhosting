@@ -100,6 +100,18 @@ func (h *Handler) updateDepartment(c *gin.Context) {
 	})
 }
 
+func (h *Handler) getRucovoditel(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("department_id"))
+
+	empl, err := h.services.Department.GetRucovoditel(id)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, empl)
+}
+
 func (h *Handler) deleteDepartment(c *gin.Context) {
 	idorg, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -126,5 +138,36 @@ func (h *Handler) deleteDepartment(c *gin.Context) {
 	c.JSON(http.StatusOK, getDepAndmessage{
 		Message: "Успешное удаление данных",
 		Data:    org,
+	})
+}
+
+func (h *Handler) updateRucovoditel(c *gin.Context) {
+	oldempl, _ := strconv.Atoi(c.Query("oldempl"))
+	newempl, _ := strconv.Atoi(c.Query("newempl"))
+
+	id, _ := strconv.Atoi(c.Param("department_id"))
+	empl, err := h.services.Department.GetRucovoditel(id)
+	if err != nil {
+		empl.ID_Employee = 0
+		msg1, err1 := h.services.Department.UpdateRucovoditel(empl, oldempl, newempl)
+		if err1 != nil {
+			newErrorResponse(c, http.StatusInternalServerError, err1.Error())
+			return
+		}
+		c.JSON(http.StatusOK, map[string]interface{}{
+			"message": msg1,
+			"error":   err1,
+		})
+	}
+
+	msg, err := h.services.Department.UpdateRucovoditel(empl, oldempl, newempl)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"message": msg,
+		"error":   err,
 	})
 }

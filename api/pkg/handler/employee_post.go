@@ -91,12 +91,6 @@ func (h *Handler) deleteEmployee_Post(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, "Неверный ключ")
 	}
 
-	var input models.Employee_Post
-	if err := c.BindJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
 	err = h.services.EmplPost.Delete(idempl, iddep)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())

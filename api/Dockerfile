@@ -6,7 +6,7 @@ COPY . .
 
 RUN go build -o main cmd/main.go
 
-EXPOSE 3211
+EXPOSE 3210
 
 RUN chmod +x main
 

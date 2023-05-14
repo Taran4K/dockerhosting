@@ -4,6 +4,7 @@ import (
 	"api/models"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"time"
 )
 
 type StrategyPostgres struct {
@@ -25,16 +26,31 @@ func (r *StrategyPostgres) Create(strategy models.Strategy, idorg int) (models.S
 		return models.Strategy{}, err
 	}
 	var strategyId int
-	query := fmt.Sprintf("SELECT insert_SGT($1, $2, $3, $4, $5, $6, $7, $8, $9)")
 
-	row := tx.QueryRow(query, strategy.Name, strategy.Description, strategy.Date_start, strategy.Date_end, strategy.Done, idorg, foreignkey, apiStrategyTable, primarykey)
-
-	err = row.Scan(&strategyId)
-	if err != nil {
-		tx.Rollback()
-		return models.Strategy{}, err
+	if strategy.Done == true && strategy.Date_done == "" {
+		strategy.Date_done = time.Now().String()
 	}
-	tx.Commit()
+
+	query := fmt.Sprintf("SELECT insert_SGT($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)")
+
+	if strategy.Done == true {
+		datetemp := time.Now().Add(time.Hour * time.Duration(3)).Format("2006-01-02 15:04:05")
+		var row = tx.QueryRow(query, strategy.Name, strategy.Description, strategy.Date_start, strategy.Date_end, strategy.Done, datetemp, idorg, foreignkey, apiStrategyTable, primarykey)
+		err = row.Scan(&strategyId)
+		if err != nil {
+			tx.Rollback()
+			return models.Strategy{}, err
+		}
+		tx.Commit()
+	} else {
+		var row = tx.QueryRow(query, strategy.Name, strategy.Description, strategy.Date_start, strategy.Date_end, strategy.Done, time.Date(0, 0, 0, 0, 0, 0, 0, time.Local), idorg, foreignkey, apiStrategyTable, primarykey)
+		err = row.Scan(&strategyId)
+		if err != nil {
+			tx.Rollback()
+			return models.Strategy{}, err
+		}
+		tx.Commit()
+	}
 
 	org, err = r.GetById(strategyId, idorg)
 	if err != nil {
@@ -74,11 +90,18 @@ func (r *StrategyPostgres) Delete(id int, idorg int) error {
 func (r *StrategyPostgres) Update(id int, strategy models.Strategy, idorg int) (models.Strategy, error) {
 	var org models.Strategy
 
-	query := fmt.Sprintf("SELECT update_SGT($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)")
+	query := fmt.Sprintf("SELECT update_SGT($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)")
 
-	_, err := r.db.Exec(query, id, strategy.Name, strategy.Description, strategy.Date_start, strategy.Date_end, strategy.Done, idorg, foreignkey, apiStrategyTable, primarykey)
+	if strategy.Done == true {
+		datetemp := time.Now().Add(time.Hour * time.Duration(3)).Format("2006-01-02 15:04:05")
+		_, err := r.db.Exec(query, id, strategy.Name, strategy.Description, strategy.Date_start, strategy.Date_end, strategy.Done, datetemp, idorg, foreignkey, apiStrategyTable, primarykey)
+		org, _ = r.GetById(id, idorg)
 
-	org, _ = r.GetById(id, idorg)
+		return org, err
+	} else {
+		_, err := r.db.Exec(query, id, strategy.Name, strategy.Description, strategy.Date_start, strategy.Date_end, strategy.Done, time.Date(0, 0, 0, 0, 0, 0, 0, time.Local), idorg, foreignkey, apiStrategyTable, primarykey)
+		org, _ = r.GetById(id, idorg)
 
-	return org, err
+		return org, err
+	}
 }

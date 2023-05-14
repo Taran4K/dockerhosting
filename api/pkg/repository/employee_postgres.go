@@ -50,6 +50,68 @@ func (r *EmployeePostgres) GetAll(iddep int) ([]models.Employee, error) {
 	return employee, err
 }
 
+func (r *EmployeePostgres) GetDep(idempl int) (models.Department, error) {
+	var department models.Department
+	var depid int
+	query := fmt.Sprintf("SELECT department_id FROM %s WHERE id_employee=$1", apiEmployeeTable)
+
+	err := r.db.Get(&depid, query, idempl)
+	if err != nil {
+		return models.Department{}, err
+	}
+
+	query2 := fmt.Sprintf("SELECT * FROM %s WHERE id_department=$1", apiDepartmentTable)
+
+	err2 := r.db.Get(&department, query2, depid)
+
+	return department, err2
+}
+
+func (r *EmployeePostgres) GetOrg(idempl int) (models.Organization, error) {
+	var org models.Organization
+	var depid, orgid int
+	query := fmt.Sprintf("SELECT department_id FROM %s WHERE id_employee=$1", apiEmployeeTable)
+
+	err := r.db.Get(&depid, query, idempl)
+	if err != nil {
+		return models.Organization{}, err
+	}
+
+	query2 := fmt.Sprintf("SELECT organization_id FROM %s WHERE id_department=$1", apiDepartmentTable)
+
+	err2 := r.db.Get(&orgid, query2, depid)
+	if err2 != nil {
+		return models.Organization{}, err2
+	}
+
+	query3 := fmt.Sprintf("SELECT * FROM %s WHERE id_organization=$1", apiOrganizationTable)
+
+	err3 := r.db.Get(&org, query3, orgid)
+
+	return org, err3
+}
+
+func (r *EmployeePostgres) GetOrganizationAll(idorg int) ([]models.Employee, error) {
+	var deps []models.Department
+	query := fmt.Sprintf("SELECT * FROM %s WHERE organization_id=$1", apiDepartmentTable)
+
+	err := r.db.Select(&deps, query, idorg)
+
+	var empls []models.Employee
+	for i := 0; i < len(deps); i++ {
+		var tempempls []models.Employee
+		query2 := fmt.Sprintf("SELECT * FROM %s WHERE department_id=$1", apiEmployeeTable)
+
+		err2 := r.db.Select(&tempempls, query2, deps[i].ID_Department)
+		if err2 != nil {
+			return []models.Employee{}, err
+		}
+		empls = append(empls, tempempls...)
+	}
+
+	return empls, err
+}
+
 func (r *EmployeePostgres) GetById(id int, iddep int) (models.Employee, error) {
 	var employee models.Employee
 	query := fmt.Sprintf("SELECT * FROM %s WHERE id_employee=$1 AND department_id=$2", apiEmployeeTable)

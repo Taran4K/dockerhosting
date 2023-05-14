@@ -55,6 +55,23 @@ func (h *Handler) getAllEmployee(c *gin.Context) {
 	})
 }
 
+func (h *Handler) getAllOrganizationEmployees(c *gin.Context) {
+	idorg, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "Неверный ключ")
+	}
+
+	list, err := h.services.Employee.GetOrganizationAll(idorg)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, getAllEmployeesResponse{
+		Data: list,
+	})
+}
+
 func (h *Handler) getEmployee(c *gin.Context) {
 	idorg, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

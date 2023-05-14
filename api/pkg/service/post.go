@@ -32,6 +32,10 @@ func (s *PostService) GetAll(iddep int, idorg int) ([]models.Post, error) {
 	return s.repo.GetAll(iddep)
 }
 
+func (s *PostService) GetOrganizationAll(idorg int) ([]models.Post, error) {
+	return s.repo.GetOrganizationAll(idorg)
+}
+
 func (s *PostService) GetById(id int, iddep int, idorg int) (models.Post, error) {
 	_, err := s.dep.GetById(iddep, idorg)
 	if err != nil {

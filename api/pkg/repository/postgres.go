@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	usersTable           = "users"
+	usersTable           = "User"
 	apiOrganizationTable = "organization"
 	apiStrategyTable     = "strategy"
 	apiOperationTable    = "finances_Operations"

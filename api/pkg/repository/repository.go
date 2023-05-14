@@ -8,6 +8,8 @@ import (
 type Authorization interface {
 	CreateUser(user models.User) (int, error)
 	GetUser(login, password string) (models.User, error)
+	GetEmployee(email string) (int, error)
+	GetAll(id int) (models.UserAllData, error)
 }
 
 type Organization interface {
@@ -15,8 +17,11 @@ type Organization interface {
 	GetAll() ([]models.Organization, error)
 	GetById(id int) (models.Organization, error)
 	GetByKey(key string) (models.Organization, error)
+	GetDirector([]models.Employee) (models.Employee, error)
 	Delete(id int) error
 	Update(id int, organization models.Organization) (models.Organization, error)
+	UpdateDirector(olddir, newdir int) (string, error)
+	CreateDirector(newdir int) (string, error)
 }
 
 type Finances_Operations interface {
@@ -39,13 +44,17 @@ type Department interface {
 	Create(department models.Department, idorg int) (models.Department, error)
 	GetAll(idorg int) ([]models.Department, error)
 	GetById(id int, idorg int) (models.Department, error)
+	GetRucovoditel(id int) (models.Employee, error)
 	Delete(id int, idorg int) error
 	Update(id int, department models.Department, idorg int) (models.Department, error)
+	UpdateRucovoditel(oldruc, newruc int) (string, error)
+	CreateRucovoditel(newruc int) (string, error)
 }
 
 type Post interface {
 	Create(post models.Post, iddep int) (models.Post, error)
 	GetAll(iddep int) ([]models.Post, error)
+	GetOrganizationAll(idorg int) ([]models.Post, error)
 	GetById(id int, iddep int) (models.Post, error)
 	Delete(id int, iddep int) error
 	Update(id int, post models.Post, iddep int) (models.Post, error)
@@ -69,9 +78,12 @@ type Empl_post interface {
 type Employee interface {
 	Create(employee models.Employee, iddep int) (models.Employee, error)
 	GetAll(iddep int) ([]models.Employee, error)
+	GetOrganizationAll(idorg int) ([]models.Employee, error)
 	GetById(id int, iddep int) (models.Employee, error)
 	Delete(id int, iddep int) error
 	Update(id int, employee models.Employee, iddep int) (models.Employee, error)
+	GetOrg(idempl int) (models.Organization, error)
+	GetDep(idempl int) (models.Department, error)
 }
 
 type Task interface {
@@ -88,6 +100,30 @@ type User interface {
 	GetById(id int, idempl int) (models.User, error)
 	Delete(id int, idempl int) error
 	Update(id int, user models.User, idempl int) (models.User, error)
+	UpdateProfile(id int, user models.UserAllData) (models.User, error)
+	UpdateEmployee(empl models.Employee) (models.Employee, error)
+	UpdatePassword(id int, newpassword string) (string, error)
+
+	CreateTask(task models.Task) (models.Task, error)
+	GetAllTask(idempl int) ([]models.Task, error)
+	GetTaskById(id int) (models.Task, error)
+	DeleteTask(id int) error
+	DeleteLogTask(id int) error
+	UpdateTask(id int, task models.Task) (models.Task, error)
+
+	CreateGoal(goal models.Goal) (models.Goal, error)
+	GetAllGoal(idempl int) ([]models.Goal, error)
+	GetGoalById(id int) (models.Goal, error)
+	DeleteGoal(id int) error
+	DeleteLogGoal(id int) error
+	UpdateGoal(id int, goal models.Goal) (models.Goal, error)
+
+	CreateStrat(strat models.Strategy) (models.Strategy, error)
+	GetAllStrat(idempl int) ([]models.Strategy, error)
+	GetStratById(id int) (models.Strategy, error)
+	DeleteStrat(id int) error
+	DeleteLogStrat(id int) error
+	UpdateStrat(id int, strat models.Strategy) (models.Strategy, error)
 }
 
 type Repository struct {
