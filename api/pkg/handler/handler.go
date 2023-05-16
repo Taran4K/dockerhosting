@@ -77,12 +77,12 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		orgs := api.Group("/organization")
 		{
 			orgs.POST("/", h.createOrganization)
-			orgs.PATCH("/:id", h.getOrganizationByKey, h.organizationIdentity)
+			orgs.PATCH("/:id", h.organizationIdentity, h.getOrganizationByKey)
 			orgs.GET("/:id", h.getOrganization)
-			orgs.PUT("/:id", h.updateOrganization, h.organizationIdentity)
-			orgs.DELETE("/:id", h.deleteOrganization, h.organizationIdentity)
-			orgs.GET("/:id/director", h.getDirector, h.organizationIdentity)
-			orgs.PUT("/:id/director", h.updateDirector, h.organizationIdentity)
+			orgs.PUT("/:id", h.organizationIdentity, h.updateOrganization)
+			orgs.DELETE("/:id", h.organizationIdentity, h.deleteOrganization)
+			orgs.GET("/:id/director", h.organizationIdentity, h.getDirector)
+			orgs.PUT("/:id/director", h.organizationIdentity, h.updateDirector)
 
 			strategy := orgs.Group(":id/strategy", h.organizationIdentity)
 			{
