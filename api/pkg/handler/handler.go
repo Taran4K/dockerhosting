@@ -77,7 +77,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		orgs := api.Group("/organization")
 		{
 			orgs.POST("/", h.createOrganization)
-			orgs.PATCH("/:id", h.organizationIdentity, h.getOrganizationByKey)
+			orgs.PATCH("/:id", h.getOrganizationByKey)
 			orgs.GET("/:id", h.getOrganization)
 			orgs.PUT("/:id", h.organizationIdentity, h.updateOrganization)
 			orgs.DELETE("/:id", h.organizationIdentity, h.deleteOrganization)
