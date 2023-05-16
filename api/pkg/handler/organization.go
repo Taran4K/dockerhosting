@@ -24,19 +24,6 @@ func (h *Handler) createOrganization(c *gin.Context) {
 	c.JSON(http.StatusOK, org)
 }
 
-func (h *Handler) getAllOrganization(c *gin.Context) {
-	list, err := h.services.Organization.GetAll()
-
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, getAllOrgsResponse{
-		Data: list,
-	})
-}
-
 func (h *Handler) getOrganization(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -48,6 +35,7 @@ func (h *Handler) getOrganization(c *gin.Context) {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
+	org.Auth_key = ""
 
 	c.JSON(http.StatusOK, org)
 }
