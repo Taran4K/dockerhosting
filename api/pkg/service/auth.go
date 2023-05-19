@@ -16,7 +16,7 @@ const (
 	signinKey    = "kjew7hH3jhkf8jdkl32KDwWDJdi32d"
 	tokenTTL     = 12 * time.Hour
 	mailsender   = "organizationcontrollapp@gmail.com"
-	mailpassword = "aizsetgvxctbhemn"
+	mailpassword = "dqcatyyhwzknpvjf"
 )
 
 type tokenClaims struct {

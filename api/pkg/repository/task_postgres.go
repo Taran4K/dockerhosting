@@ -68,7 +68,7 @@ func (r *TaskPostgres) GetById(id int, idorg int) (models.Task, error) {
 	var org models.Task
 	query := fmt.Sprintf("SELECT * FROM %s WHERE id_Task=$1 AND employee_id=$2", apiTaskTable)
 
-	err := r.db.Get(&org, query, id, idorg)
+	err := r.db.Get(&org, query, id, &idorg)
 
 	return org, err
 }
