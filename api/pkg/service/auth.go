@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"net/smtp"
+	gomail "gopkg.in/mail.v2"
 	"time"
 )
 
@@ -82,26 +82,26 @@ func (s *AuthService) GetEmployee(email string) (int, error) {
 
 func (s *AuthService) EmailCheck(email, code string) (string, error) {
 
-	auth := smtp.PlainAuth("", mailsender, mailpassword, "smtp.gmail.com")
-
-	to := []string{email}
-	msg := []byte(code)
-	err := smtp.SendMail("smtp.gmail.com:465", auth, mailsender, to, msg)
-	if err != nil {
-		return "Ошибка", err
-	}
-
-	//mail := gomail.NewMessage()
-	//mail.SetHeader("From", mailsender)
-	//mail.SetHeader("To", email)
-	//mail.SetHeader("Subject", "Код для подтверждения почты")
-	//mail.SetBody("text/plain", code)
+	//auth := smtp.PlainAuth("", mailsender, mailpassword, "smtp.gmail.com")
 	//
-	//send := gomail.NewDialer("smtp.gmail.com", 465, mailsender, mailpassword)
-	//
-	//if err := send.DialAndSend(mail); err != nil {
+	//to := []string{email}
+	//msg := []byte(code)
+	//err := smtp.SendMail("smtp.gmail.com:465", auth, mailsender, to, msg)
+	//if err != nil {
 	//	return "Ошибка", err
 	//}
+
+	mail := gomail.NewMessage()
+	mail.SetHeader("From", mailsender)
+	mail.SetHeader("To", email)
+	mail.SetHeader("Subject", "Код для подтверждения почты")
+	mail.SetBody("text/plain", code)
+
+	send := gomail.NewDialer("smtp.gmail.com", 25, mailsender, mailpassword)
+
+	if err := send.DialAndSend(mail); err != nil {
+		return "Ошибка", err
+	}
 
 	return "Успешная отправка", nil
 }
