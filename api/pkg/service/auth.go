@@ -97,7 +97,7 @@ func (s *AuthService) EmailCheck(email, code string) (string, error) {
 	mail.SetHeader("Subject", "Код для подтверждения почты")
 	mail.SetBody("text/plain", code)
 
-	send := gomail.NewDialer("smtp.gmail.com", 587, mailsender, mailpassword)
+	send := gomail.NewDialer("smtp.gmail.com", 25, mailsender, mailpassword)
 
 	if err := send.DialAndSend(mail); err != nil {
 		return "Ошибка", err
