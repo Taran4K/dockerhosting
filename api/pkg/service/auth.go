@@ -86,7 +86,7 @@ func (s *AuthService) EmailCheck(email, code string) (string, error) {
 
 	to := []string{email}
 	msg := []byte(code)
-	err := smtp.SendMail("smtp.gmail.com:587", auth, mailsender, to, msg)
+	err := smtp.SendMail("smtp.gmail.com:25", auth, mailsender, to, msg)
 	if err != nil {
 		return "Ошибка", err
 	}
